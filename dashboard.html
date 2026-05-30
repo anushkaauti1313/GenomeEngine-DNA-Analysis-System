@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Analysis Dashboard - Advanced Genomics Visualizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .insight-card h2 {
+            color: white;
+            border-bottom-color: white;
+        }
+        
+        .stat-box {
+            display: inline-block;
+            padding: 15px;
+            margin: 10px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            color: #856404; /* Darker brown for warning text */
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            color: #0c5460; /* Darker blue for info text */
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        .dna-viewer {
+            font-family: monospace;
+            font-size: 1.2em;
+            line-height: 1.8;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .base-a { color: #ff6b6b; font-weight: bold; }
+        .base-t { color: #4ecdc4; font-weight: bold; }
+        .base-c { color: #45b7d1; font-weight: bold; }
+        .base-g { color: #f9ca24; font-weight: bold; }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Chatbox Styles */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .chat-body {
+            height: 300px;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f8f9fa;
+        }
+        .chat-message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 0.9em;
+            word-wrap: break-word;
+        }
+        .msg-user {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        .msg-bot {
+            background: #e9ecef;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+            font-family: monospace;
+        }
+        .chat-input button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            margin-top: 0;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .chat-collapsed {
+            transform: translateY(calc(100% - 54px));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DNA Analysis Dashboard</h1>
+            <p>Advanced Genomic Visualization and Medical Insights</p>
+            <!-- Removed legacy JSON buttons -->
+            
+            <div style="margin-top: 30px; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #ddd; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">Real-time DNA Analysis</h3>
+                
+                <div style="margin-bottom: 15px; text-align: left;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Upload DNA File (.txt, .fasta):</label>
+                    <input type="file" id="dnaFileUp" accept=".txt,.fasta" onchange="handleDNAUpload(this)" style="width: 100%; padding: 8px; background: white; border: 1px solid #ccc; border-radius: 5px;">
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <label style="display: block; text-align: left; margin-bottom: 5px; font-weight: bold;">DNA Sequence:</label>
+                        <textarea id="dnaInput" placeholder="Enter DNA (e.g. ATGC...)" style="width: 100%; height: 100px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: monospace; resize: vertical;"></textarea>
+                    </div>
+                    <div style="flex: 0.5; min-width: 150px;">
+                        <label style="display: block; text-align: left; margin-bottom: 5px; font-weight: bold;">Search Pattern:</label>
+                        <input type="text" id="patternInput" placeholder="e.g. ATG" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: monospace;">
+                    </div>
+                </div>
+                <button onclick="analyzeDNA()" style="width: 100%; margin-top: 15px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Run Analysis Bridge</button>
+                <div id="loadingStatus" style="margin-top: 10px; font-style: italic; color: #666; display: none;">Processing DNA...</div>
+            </div>
+        </div>
+        
+        <div id="dashboardContent" style="display:none;">
+            <!-- Health Status Banner -->
+            <div id="healthBanner" style="padding: 20px; border-radius: 15px; margin-bottom: 25px; text-align: center; color: white; font-weight: bold; font-size: 1.5em; box-shadow: 0 5px 15px rgba(0,0,0,0.1); background: #6c757d;">
+                Genomic Health Status: <span id="healthStatus">Scanning...</span>
+            </div>
+            <div class="dashboard-grid">
+                <!-- Pie Chart Card -->
+                <div class="card">
+                    <h2>Nucleotide Composition</h2>
+                    <canvas id="pieChart" width="400" height="400"></canvas>
+                    <div class="info">
+                        <strong>What this means:</strong> Shows the proportion of each DNA base. 
+                        A balanced genome typically has A=T and G=C (Chargaff's rule).
+                        <div id="baseDistributionComment" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; font-style: italic; color: #555;">
+                            Analyzing base frequency implications...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bar Chart Card -->
+                <div class="card">
+                    <h2>Base Frequency Distribution</h2>
+                    <canvas id="barChart" width="400" height="400"></canvas>
+                    <div class="info">
+                        <strong>What this means:</strong> Deviations from equality may indicate 
+                        evolutionary pressure or sequencing errors.
+                    </div>
+                </div>
+                
+                <!-- GC Content & Stats -->
+                <div class="card">
+                    <h2>GC Content Analysis</h2>
+                    <div id="gcGauge" style="height: 300px;"></div>
+                    <div id="gcInsights"></div>
+                </div>
+                
+                <!-- Medical Insights Card -->
+                <div class="card insight-card">
+                    <h2>Medical Insights</h2>
+                    <div id="medicalInsights"></div>
+                </div>
+                
+                <!-- DNA Sequence Viewer -->
+                <div class="card">
+                    <h2>DNA Sequence Viewer</h2>
+                    <div id="dnaViewer" class="dna-viewer"></div>
+                    <div class="info">
+                        <strong>Color code:</strong> <span class="base-a">A (Red)</span> | 
+                        <span class="base-t">T (Blue)</span> | 
+                        <span class="base-c">C (Cyan)</span> | 
+                        <span class="base-g">G (Yellow)</span>
+                    </div>
+                </div>
+                
+                <!-- Pattern Matches -->
+                <div class="card">
+                    <h2>Pattern Search Results</h2>
+                    <div id="patternInfo"></div>
+                    <div id="patternVisualization"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Personalized Recommendations</h2>
+                <div id="recommendations"></div>
+            </div>
+
+            <!-- Advanced Genomic Analysis Section -->
+            <div class="card">
+                <h2>Comprehensive Genomic Report</h2>
+                <div id="advancedAnalysis" class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Chat Widget -->
+    <div class="chat-widget chat-collapsed" id="chatWidget" style="display: none;">
+        <div class="chat-header" onclick="toggleChat()">
+            <span>🧬 Disease Predictor</span>
+            <span id="chatToggleIcon">▲</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message msg-bot">
+                Hi! Enter a pattern and I'll predict diseases and check your DNA! Try these:
+                <ul style="margin-top: 5px; padding-left: 20px;">
+                    <li>Cancer <strong>(ATGCGT)</strong></li>
+                    <li>Thalassemia <strong>(GTCAG)</strong></li>
+                    <li>Cystic Fibrosis <strong>(CTT)</strong></li>
+                    <li>Huntington's <strong>(CAGCAG)</strong></li>
+                    <li>Tay-Sachs <strong>(TATC)</strong></li>
+                </ul>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Enter pattern..." onkeypress="handleChatPress(event)">
+            <button onclick="sendChatMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let chartPie, chartBar, gcPlot;
+        
+        function handleDNAUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let content = e.target.result;
+                
+                // If it's a FASTA file, remove headers
+                if (content.startsWith('>')) {
+                    content = content.split('\n').slice(1).join('');
+                }
+                
+                // Clean content: remove whitespace, numbers, and keep only ATCG
+                const cleaned = content.replace(/[^ATCGatcg]/g, '').toUpperCase();
+                document.getElementById('dnaInput').value = cleaned;
+            };
+            reader.readAsText(file);
+        }
+        
+        function analyzeDNA() {
+            const dna = document.getElementById('dnaInput').value.trim();
+            const pattern = document.getElementById('patternInput').value.trim();
+            const loading = document.getElementById('loadingStatus');
+            
+            if (!dna || !pattern) {
+                alert('Please enter both a DNA sequence and a search pattern.');
+                return;
+            }
+            
+            loading.style.display = 'block';
+            
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ dna, pattern }),
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Engine Error: ' + response.statusText);
+                return response.json();
+            })
+            .then(data => {
+                loading.style.display = 'none';
+                displayDashboard(data);
+                // Also trigger a notification or scroll
+                document.getElementById('dashboardContent').scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                console.error('Error:', error);
+                alert('Failed to connect to the Bridge Server. Make sure app.py is running!');
+            });
+        }
+        
+        // Removed loadFromFile and old JSON logic
+        
+        function displayDashboard(data) {
+            document.getElementById('dashboardContent').style.display = 'block';
+            document.getElementById('chatWidget').style.display = 'flex';
+            
+            // Update DNA Viewer
+            const dnaViewer = document.getElementById('dnaViewer');
+            let coloredDNA = '';
+            for (let base of data.dna_sequence) {
+                let colorClass = '';
+                if (base === 'A') colorClass = 'base-a';
+                else if (base === 'T') colorClass = 'base-t';
+                else if (base === 'C') colorClass = 'base-c';
+                else if (base === 'G') colorClass = 'base-g';
+                coloredDNA += `<span class="${colorClass}">${base}</span>`;
+            }
+            dnaViewer.innerHTML = coloredDNA;
+            
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (chartPie) chartPie.destroy();
+            chartPie = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Adenine (A)', 'Thymine (T)', 'Cytosine (C)', 'Guanine (G)'],
+                    datasets: [{
+                        data: [data.base_counts.A, data.base_counts.T, data.base_counts.C, data.base_counts.G],
+                        backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: {
+                            label: function(context) {
+                                const total = data.base_counts.A + data.base_counts.T + data.base_counts.C + data.base_counts.G;
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                        }}
+                    }
+                }
+            });
+
+            // Base Frequency Commentary
+            const counts = data.base_counts;
+            const maxBase = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            let baseComment = "";
+            
+            if (maxBase === 'A' || maxBase === 'T') {
+                baseComment = "Analysis: High A-T concentration detected. This often indicates 'unstable' or 'flexible' regions that are easier for cellular machinery to open, common in origins of replication and regulatory TATA-boxes.";
+            } else if (maxBase === 'G' || maxBase === 'C') {
+                baseComment = "Analysis: High G-C concentration detected. This suggests a highly stable, 'coding-rich' region. These areas are typically dense with genes and require more energy to denature during replication.";
+            }
+            
+            document.getElementById('baseDistributionComment').innerText = baseComment;
+            
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if (chartBar) chartBar.destroy();
+            chartBar = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['A', 'T', 'C', 'G'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [data.base_counts.A, data.base_counts.T, data.base_counts.C, data.base_counts.G],
+                        backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24'],
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Frequency' } } }
+                }
+            });
+            
+            // GC Content Gauge
+            const gcValue = data.gc_content;
+            const gcData = [{
+                type: "indicator",
+                mode: "gauge+number+delta",
+                value: gcValue,
+                title: { text: "GC Content (%)", font: { size: 24 } },
+                delta: { reference: 50 },
+                gauge: {
+                    axis: { range: [0, 100], tickwidth: 1, tickcolor: "darkblue" },
+                    bar: { color: "darkblue" },
+                    bgcolor: "white",
+                    borderwidth: 2,
+                    bordercolor: "gray",
+                    steps: [
+                        { range: [0, 40], color: "lightcoral" },
+                        { range: [40, 60], color: "lightgreen" },
+                        { range: [60, 100], color: "lightsalmon" }
+                    ],
+                    threshold: {
+                        line: { color: "red", width: 4 },
+                        thickness: 0.75,
+                        value: gcValue
+                    }
+                }
+            }];
+            
+            const gcLayout = { width: 450, height: 300, margin: { t: 25, r: 25, l: 25, b: 25 } };
+            Plotly.newPlot('gcGauge', gcData, gcLayout);
+            
+            // GC Content Insights
+            let gcInsight = '';
+            const hb = document.getElementById('healthBanner');
+            const hs = document.getElementById('healthStatus');
+            
+            if (gcValue > 65) {
+                hb.style.background = 'linear-gradient(135deg, #ff4b2b, #ff416c)';
+                hs.innerText = 'HIGH RISK (Extreme Stability)';
+                gcInsight = `<div class="warning"><strong>High GC Content (${gcValue.toFixed(1)}%)</strong><br>
+                This indicates stable DNA regions resistant to heat denaturation. 
+                Associated with gene-rich areas, but may indicate risk for:
+                <ul>
+                    <li>Huntington's disease</li>
+                    <li>Fragile X syndrome</li>
+                    <li>Certain cancers (e.g., colorectal)</li>
+                </ul>
+                </div>`;
+            } else if (gcValue < 35) {
+                hb.style.background = 'linear-gradient(135deg, #f093fb, #f5576c)';
+                hs.innerText = 'HIGH RISK (Extreme Instability)';
+                gcInsight = `<div class="warning"><strong>Low GC Content (${gcValue.toFixed(1)}%)</strong><br>
+                DNA regions are less stable and prone to mutations. Often found in:
+                <ul>
+                    <li>Non-coding regions</li>
+                    <li>Repetitive sequences</li>
+                    <li>Telomeres and centromeres</li>
+                </ul>
+                </div>`;
+            } else if (gcValue > 55 || gcValue < 45) {
+                hb.style.background = 'linear-gradient(135deg, #f6d365, #fda085)';
+                hs.innerText = 'MODERATE RISK (Imbalanced)';
+                gcInsight = `<div class="info"><strong>Imbalanced GC Content (${gcValue.toFixed(1)}%)</strong><br>
+                DNA regions show slight deviation from optimal stability.</div>`;
+            } else {
+                hb.style.background = 'linear-gradient(135deg, #5ee7df, #b490ca)';
+                hs.innerText = 'OPTIMAL HEALTH (Balanced)';
+                gcInsight = `<div class="info"><strong>Normal GC Content (${gcValue.toFixed(1)}%)</strong><br>
+                Your DNA shows balanced GC distribution, typical for healthy genomic regions.</div>`;
+            }
+            document.getElementById('gcInsights').innerHTML = gcInsight;
+            
+            // Medical Insights
+            let medicalHtml = '<div style="max-height: 400px; overflow-y: auto;">';
+            if (data.medical_insights && Array.isArray(data.medical_insights)) {
+                data.medical_insights.forEach(insight => {
+                    medicalHtml += `<div class="warning" style="margin: 10px 0;">Analysis: ${insight}</div>`;
+                });
+            }
+            
+            // Add Error Prediction (Mutation) Details to Insights
+            if (data.mutation_details && data.mutation_details.length > 0) {
+                medicalHtml += `<div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #856404; margin-top: 0;">⚠️ Error Prediction (Mutation Detected)</h4>
+                    <ul style="padding-left: 20px; font-size: 0.9em; color: #856404;">
+                `;
+                data.mutation_details.forEach(m => {
+                    medicalHtml += `<li><strong>Pos ${m.index}:</strong> ${m.severity} Severity Mutation (Dist: ${m.distance}, Conf: ${m.confidence}%)</li>`;
+                });
+                medicalHtml += `</ul>
+                    <p style="font-size: 0.85em; margin-bottom: 0;"><strong>Impact:</strong> Genetic variants detected via approximate pattern matching (Levenshtein Distance).</p>
+                </div>`;
+            }
+
+            if (data.mutations_detected) {
+                medicalHtml += `<div class="warning" style="background: #ff6b6b; color: white; margin-top: 15px;">
+                <strong>MUTATION DETECTED!</strong><br>
+                This could indicate:
+                <ul>
+                    <li>Single Nucleotide Polymorphism (SNP)</li>
+                    <li>Potential disease-causing variant</li>
+                    <li>Evolutionary adaptation marker</li>
+                </ul>
+                <strong>Recommended:</strong> Genetic counseling and confirmatory sequencing
+                </div>`;
+            } else {
+                medicalHtml += `<div class="info" style="margin-top: 15px;">No significant mutations detected in the searched pattern.</div>`;
+            }
+            medicalHtml += '</div>';
+            document.getElementById('medicalInsights').innerHTML = medicalHtml;
+            
+            // Pattern Info & Approximate Matches
+            let patternHtml = `<div class="stat-box"><div class="stat-value">${data.pattern}</div><div class="stat-label">Searched Pattern</div></div>`;
+            
+            // Exact Matches
+            if (data.pattern_matches && data.pattern_matches.length > 0) {
+                patternHtml += `<div class="info" style="background: #d4edda; border-color: #c3e6cb; color: #155724;">
+                    Found ${data.pattern_matches.length} <strong>Exact Match(es)</strong> at positions: ${data.pattern_matches.join(', ')}
+                </div>`;
+            } else {
+                patternHtml += `<div class="warning">Exact pattern '${data.pattern}' not found in sequence</div>`;
+            }
+
+            // Approximate Matches (Mutations)
+            if (data.mutation_details && data.mutation_details.length > 0) {
+                patternHtml += `<div style="margin-top: 15px;">
+                    <h4 style="margin-bottom: 10px;">Predicted Mutations (${data.mutation_details.length} found)</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">`;
+                
+                // Only show the first 10 to avoid clutter
+                const topMutations = data.mutation_details.slice(0, 10);
+                topMutations.forEach(m => {
+                    let badgeColor = '#ffc107'; 
+                    if (m.severity === 'Moderate') badgeColor = '#fd7e14';
+                    if (m.severity === 'High') badgeColor = '#dc3545';
+                    
+                    patternHtml += `<div style="background: ${badgeColor}; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.85em;">
+                        Pos ${m.index}: ${m.severity} (${m.confidence}%)
+                    </div>`;
+                });
+                
+                if (data.mutation_details.length > 10) {
+                    patternHtml += `<div style="color: #666; font-size: 0.8em; padding: 5px;">+ ${data.mutation_details.length - 10} more...</div>`;
+                }
+                
+                patternHtml += `</div></div>`;
+
+                // Visualize pattern and mutation matches
+                let patternViz = '<div class="dna-viewer" style="font-size: 0.8em; line-height: 1.5;">';
+                for (let i = 0; i < data.dna_sequence.length; i++) {
+                    let exactMatch = data.pattern_matches && data.pattern_matches.some(pos => i >= pos && i < pos + data.pattern.length);
+                    
+                    let mutationMatch = null;
+                    if (!exactMatch && data.mutation_details) {
+                        mutationMatch = data.mutation_details.find(m => i >= m.index && i < m.index + data.pattern.length);
+                    }
+
+                    if (exactMatch) {
+                        patternViz += `<span style="background: #28a745; color: white; font-weight: bold; padding: 0 1px;">${data.dna_sequence[i]}</span>`;
+                    } else if (mutationMatch) {
+                        let color = '#ffc107';
+                        if (mutationMatch.severity === 'Moderate') color = '#fd7e14';
+                        if (mutationMatch.severity === 'High') color = '#dc3545';
+                        patternViz += `<span style="background: ${color}; color: white; font-weight: bold; padding: 0 1px;" title="${mutationMatch.severity} Mutation">${data.dna_sequence[i]}</span>`;
+                    } else {
+                        patternViz += data.dna_sequence[i];
+                    }
+                }
+                patternViz += '</div>';
+                document.getElementById('patternVisualization').innerHTML = patternViz;
+            } else {
+                document.getElementById('patternVisualization').innerHTML = '<div class="info">No approximate matches found for visualization.</div>';
+            }
+            document.getElementById('patternInfo').innerHTML = patternHtml;
+            
+            // Recommendations
+            let recHtml = '<ul>';
+            if (data.recommendations && Array.isArray(data.recommendations)) {
+                data.recommendations.forEach(rec => {
+                    recHtml += `<li>${rec}</li>`;
+                });
+            }
+            recHtml += '</ul>';
+            document.getElementById('recommendations').innerHTML = recHtml;
+
+            // Advanced Analysis
+            if (data.advanced_analysis) {
+                let advHtml = '';
+                for (let key in data.advanced_analysis) {
+                    const item = data.advanced_analysis[key];
+                    advHtml += `
+                        <div class="card" style="border: 1px solid #eee; background: #fafafa;">
+                            <h3 style="color: #764ba2; margin-bottom: 10px;">${item.title}</h3>
+                            <p style="font-size: 0.9em; color: #666; margin-bottom: 10px; font-style: italic;">${item.description}</p>
+                            <div class="info" style="margin: 0; background: white; border: 1px solid #e0e0e0;">
+                                <strong>Analysis Comment:</strong><br>
+                                ${item.comment}
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('advancedAnalysis').innerHTML = advHtml;
+            }
+        }
+        
+        // Auto-load on page load
+        // Dashboard starts ready for input
+        window.addEventListener('load', () => {
+            console.log("DNA Dashboard ready.");
+        });
+
+        // Chatbox logic
+        const diseaseDictionary = {
+            "ATGCGT": { name: "Cancer", type: "Mutation", suggestion: "Consult an oncologist for comprehensive screening and consider lifestyle modifications." },
+            "GTCAG": { name: "Thalassemia", type: "Deletion", suggestion: "Seek hematologist advice, monitor hemoglobin levels, and follow a specialized diet." },
+            "CTT": { name: "Cystic Fibrosis", type: "Deletion", suggestion: "Pneumologist consultation is highly recommended. Consider genetic counseling." },
+            "CAGCAG": { name: "Huntington's Disease", type: "Repetition", suggestion: "Consult a neurologist and genetic counselor. Explore early intervention options." },
+            "TATC": { name: "Tay-Sachs Disease", type: "Insertion", suggestion: "Immediate specialist consultation required. Seek genetic counseling." }
+        };
+
+        function toggleChat() {
+            const widget = document.getElementById('chatWidget');
+            const icon = document.getElementById('chatToggleIcon');
+            widget.classList.toggle('chat-collapsed');
+            icon.innerText = widget.classList.contains('chat-collapsed') ? '▲' : '▼';
+        }
+
+        function handleChatPress(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        }
+
+        function appendMessage(text, isUser) {
+            const chatBody = document.getElementById('chatBody');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${isUser ? 'msg-user' : 'msg-bot'}`;
+            msgDiv.innerHTML = text;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            let pattern = input.value.trim().toUpperCase();
+            if (!pattern) return;
+            
+            pattern = pattern.replace(/[^ATCG]/g, '');
+            input.value = '';
+            
+            if (!pattern) {
+                appendMessage("Please enter valid DNA bases (A, T, C, G).", false);
+                return;
+            }
+
+            appendMessage(pattern, true);
+
+            const diseaseMatch = diseaseDictionary[pattern];
+            const currentDNA = document.getElementById('dnaInput').value.trim().toUpperCase();
+            let foundInDNA = false;
+            
+            if (currentDNA && currentDNA.includes(pattern)) {
+                foundInDNA = true;
+            }
+
+            setTimeout(() => {
+                let responseHtml = "";
+                
+                if (diseaseMatch) {
+                    responseHtml += `<strong>Prediction:</strong> Mapped to ${diseaseMatch.name} (${diseaseMatch.type} variant).<br><br>`;
+                    
+                    if (!currentDNA) {
+                        responseHtml += `<em style="color:#666;">Note: No active DNA sequence loaded to check against.</em>`;
+                    } else if (foundInDNA) {
+                        responseHtml += `<span style="color: #d32f2f; font-weight: bold;">⚠️ ALERT: This pattern was FOUND in the current DNA sequence!</span><br><br>`;
+                        responseHtml += `<span style="color: #c62828;"><strong>Recommendation:</strong> ${diseaseMatch.suggestion}</span>`;
+                    } else {
+                        responseHtml += `<span style="color: #2e7d32; font-weight: bold;">✅ CLEAR: This pattern was NOT found in the analyzed DNA sequence.</span>`;
+                    }
+                } else {
+                    responseHtml += `No diseases mapped to the pattern '${pattern}'.<br><br>`;
+                    if (!currentDNA) {
+                        responseHtml += `<em style="color:#666;">No DNA sequence loaded to check.</em>`;
+                    } else if (foundInDNA) {
+                        responseHtml += `<span style="color: #d32f2f; font-weight: bold;">Note: This unmapped pattern DOES exist in your loaded DNA sequence.</span>`;
+                    } else {
+                        responseHtml += `<span style="color: #2e7d32; font-weight: bold;">This unmapped pattern does NOT exist in your DNA sequence.</span>`;
+                    }
+                }
+                
+                appendMessage(responseHtml, false);
+            }, 500);
+        }
+    </script>
+</body>
+</html>

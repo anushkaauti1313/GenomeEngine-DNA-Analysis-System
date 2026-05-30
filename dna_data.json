@@ -1,0 +1,58 @@
+{
+  "dna_sequence": "CCCCGGGAAAGGGACAGGGGCCCAAGGGATGCTCCGGGGGACGGGCGGGGGAAAGTGAATTTCCGAAGCTAGGCAGATGGGTATTCTTATGCGAGGGGCGGGGGCGGAACCTGAGAGGCATAAGGCGTTGTGAACCCCCCGGGGAAGGGGGCAGTTTGTAGGTCTCGAGGGAAGCACTAAGGATCAGGTTGGGGGCACAGTGTGTCCGAGGAGGAATCCTCCTGATAGGAACTGGAATGTGCCTTGAAGGGGACACCATGTGTATAAGAACATCAGCTGGTCGCCGGGGATGGTGGCTTACGCCTGTATTCCTAGCACTTTGGGAGGCCAAGGCGGATGGATCACGAGGTCAGGAGTTCGAGACCAGCCTGACCATCGTGGTGAAACCCCGTCTCTACTAAAAATACAAAAATTAGCCGGGCGTGGTGGCGCGCGCCAGCTACTCAGGAGCTGAGGCAGGAGAATCGCTTGAACCCAGGAGGCGGAGGTTGCAGTGAGCCGAGATCGCGCCATTGCACTCCAGCCTGGGTGGCAGAACGACACTCCGTCTCAAAAACAAACAAAGAAATAAACACCGGCTGGTATATATGAGAAGATGGGCCCTTGCGGAAGAAGAAGTGCCAGGAATATGTCTGGGAAGGGGAGGAGACAGGATTTTGTGGGAGGGAGAACTTAAGAACTGGATCCATTTGTGCTATTGAGAAAGCGCAAGAGGGAAGTAGAGGAGCGTCAGTAGTAACAGATGCTGCCGGCAGGGATGTGCTTGAGGGGGATCCTGAGATGAGAGTGGGTCGCTGGGAAAGGCTAGGGGCAGGGAGGCCTTGATTGGTGTTGGTTTGGTCGTTGTTGATTTTGGTTTTATGCAAGAAAAAGAAAACAGCCAGAAGCATTGGAGAAAGCTCACCACTTACCCGGTCAGTCACTCCCCTGTAGCTTTCTCTTTCTTGGAGAAAGGAAAAGACCCAAAGGGTTGGAAGCAATATGTGAAAAAATACAGAATTTATATTGTCTAATTACAAAAAGCAACTTCTAGAACCTTTAAAGGATTTTGTATTATTCTAAAACCTTCCAAATCTTAAATTTACCTTATTTTATTTTATTTATTTTTGAGACGGAGCTTCGCTCTTGTTGCCCAGGCTGGAGTGTAATGGCGTGATTTGGGCTCACCGCAACCTCTGACTCGTGGGTTCAAGCGATTCT",
+  "length": 1200,
+  "pattern": "CTT",
+  "base_counts": {
+    "A": 320,
+    "T": 269,
+    "C": 232,
+    "G": 379
+  },
+  "gc_content": 50.92,
+  "pattern_matches": [85, 242, 296, 317, 467, 602, 671, 762, 820, 906, 933, 939, 943, 1026, 1036, 1065, 1074, 1085, 1117, 1124],
+  "mutations_detected": false,
+  "medical_insights": ["OPTIMAL: Balanced GC content (50.9167%). This is the 'Golden Zone' for genomic health, indicating stable replication and efficient protein synthesis.", "METABOLISM: Sequence characteristics suggest efficient enzymatic production capabilities."],
+  "recommendations": ["MAINTENANCE: Maintain current healthy lifestyle to preserve genomic balance.", "CHECKUP: Standard annual health screenings are sufficient."],
+  "advanced_analysis": {
+    "genetic_info": {
+      "title": "Genetic Information",
+      "description": "Identifies genes and their functions, determines biological characteristics",
+      "comment": "Analysis shows 1200 base pairs. The high concentration of G-C bonds suggests a coding-rich sequence segment."
+    },
+    "disease_detection": {
+      "title": "Disease Detection",
+      "description": "Detects genetic disorders, identifies mutation-related diseases",
+      "comment": "No known high-risk pathogenic repeat expansions detected in the primary sequence."
+    },
+    "mutation_id": {
+      "title": "Mutation Identification",
+      "description": "Finds changes in DNA sequence, helps study variations",
+      "comment": "Detected 0 potential polymorphic sites. These variations contribute to phenotypic diversity or disease susceptibility."
+    },
+    "dna_stability": {
+      "title": "DNA Stability (GC Content)",
+      "description": "High GC → more stable DNA, Low GC → less stable DNA",
+      "comment": "Stability Score: 50.9167%. DNA is highly stable with a melting temperature (Tm) estimated at 85.3592°C."
+    },
+    "gene_id": {
+      "title": "Pattern / Gene Identification",
+      "description": "Detects specific gene sequences, helps in gene mapping",
+      "comment": "Identified regulatory motifs. High TATA-box affinity suggests active promoter regions in this segment."
+    },
+    "evolutionary_relationships": {
+      "title": "Evolutionary Relationships",
+      "description": "Compares DNA between species, helps trace ancestry",
+      "comment": "Sequence conservation analysis suggests highly conserved ancestral markers. High homology with primate baseline genomes."
+    },
+    "forensic_id": {
+      "title": "Forensic Identification",
+      "description": "Used in crime investigation, DNA fingerprinting",
+      "comment": "Short Tandem Repeat (STR) profiling completed. Unique digital signature generated for individual identification (1 in 10^12 probability of match)."
+    },
+    "personalized_medicine": {
+      "title": "Personalized Medicine",
+      "description": "Helps in treatment planning, predicts drug response",
+      "comment": "Pharmacogenomic analysis: Current markers suggest standard response to enzymatic metabolizers. Recommended dose adjustments for specific drug classes."
+    }
+  }
+}
